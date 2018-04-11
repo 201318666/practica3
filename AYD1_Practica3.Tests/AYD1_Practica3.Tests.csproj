@@ -6,7 +6,7 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{46BB0595-29F9-4874-8512-08EDBECC6BDE}</ProjectGuid>
+    <ProjectGuid>{FDA97FBD-D01C-41D9-BC43-38F937CB0147}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AYD1_Practica3.Tests</RootNamespace>
@@ -100,7 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AYD1_Practica3\AYD1_Practica3.csproj">
-      <Project>{9DEDC1FE-654A-403C-8812-59EDC3657C41}</Project>
+      <Project>{2DD7AB03-F2B8-4255-B1CD-20AE85058A3D}</Project>
       <Name>AYD1_Practica3</Name>
     </ProjectReference>
   </ItemGroup>
