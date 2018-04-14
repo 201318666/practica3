@@ -14,6 +14,12 @@ namespace AYD1_Practica3
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "Transferencia",
+                url: "Transferencia/CrearTransferencia",
+                defaults: new { controller = "Transferencia", action = "Index", id = UrlParameter.Optional }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
