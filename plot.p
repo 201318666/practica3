@@ -1,4 +1,4 @@
-set terminal png size 600
+set terminal png size 800
 set output "grafica.png"
 set title "1000 peticiones, 10 peticiones concurrentes"
 set size ratio 0.6
