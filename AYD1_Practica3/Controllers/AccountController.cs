@@ -9,6 +9,8 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using AYD1_Practica3.Models;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace AYD1_Practica3.Controllers
 {
@@ -22,7 +24,7 @@ namespace AYD1_Practica3.Controllers
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -34,9 +36,9 @@ namespace AYD1_Practica3.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -72,23 +74,52 @@ namespace AYD1_Practica3.Controllers
             {
                 return View(model);
             }
-
-            // No cuenta los errores de inicio de sesión para el bloqueo de la cuenta
-            // Para permitir que los errores de contraseña desencadenen el bloqueo de la cuenta, cambie a shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
-            switch (result)
+            SqlConnection sqlCon = new SqlConnection("Data Source=(LocalDb)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\Javier\\source\\repos\\AYD1_Practica3\\AYD1_Practica3\\App_Data\\aspnet-AYD1_Practica3-20180410094646.mdf;Initial Catalog=aspnet-AYD1_Practica3-20180410094646;Integrated Security=True");
+            SqlCommand sqlCmd = new SqlCommand
             {
-                case SignInStatus.Success:
-                    return RedirectToLocal(returnUrl);
-                case SignInStatus.LockedOut:
-                    return View("Lockout");
-                case SignInStatus.RequiresVerification:
-                    return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
-                case SignInStatus.Failure:
-                default:
-                    ModelState.AddModelError("", "Intento de inicio de sesión no válido.");
-                    return View(model);
+                CommandText = "select count(AccountNumber) from AspNetUsers where AccountNumber='" + model.AccountNumber + "';",
+                Connection = sqlCon
+            };
+            string consulta = "0";
+            try
+            {
+                sqlCon.Open();
+                consulta = sqlCmd.ExecuteScalar().ToString();
             }
+            catch
+            {
+            }
+            finally
+            {
+                if (sqlCon.State == ConnectionState.Open)
+                    sqlCon.Close();
+            }
+            
+            if (consulta.Equals("1"))
+            {
+                // No cuenta los errores de inicio de sesión para el bloqueo de la cuenta
+                // Para permitir que los errores de contraseña desencadenen el bloqueo de la cuenta, cambie a shouldLockout: true
+                var result = await SignInManager.PasswordSignInAsync(model.User, model.Password, model.RememberMe, shouldLockout: false);
+                switch (result)
+                {
+                    case SignInStatus.Success:
+                        return RedirectToLocal(returnUrl);
+                    case SignInStatus.LockedOut:
+                        return View("Lockout");
+                    case SignInStatus.RequiresVerification:
+                        return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+                    case SignInStatus.Failure:
+                    default:
+                        ModelState.AddModelError("", "Intento de inicio de sesión no válido.");
+                        return View(model);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError("", "Numero de cuenta no concuerda con ninguna registrada.");
+                return View(model);
+            }
+
         }
 
         //
@@ -120,7 +151,7 @@ namespace AYD1_Practica3.Controllers
             // Si un usuario introduce códigos incorrectos durante un intervalo especificado de tiempo, la cuenta del usuario 
             // se bloqueará durante un período de tiempo especificado. 
             // Puede configurar el bloqueo de la cuenta en IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -151,25 +182,34 @@ namespace AYD1_Practica3.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                string cuenta = RandomString();
+                var user = new ApplicationUser { UserName = model.User, Email = model.Email, AccountNumber = cuenta, UserNameComplete=model.Username, Balance= "0.0"};
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
                     // Para obtener más información sobre cómo habilitar la confirmación de cuentas y el restablecimiento de contraseña, visite https://go.microsoft.com/fwlink/?LinkID=320771
                     // Enviar correo electrónico con este vínculo
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirmar cuenta", "Para confirmar la cuenta, haga clic <a href=\"" + callbackUrl + "\">aquí</a>");
-
-                    return RedirectToAction("Index", "Home");
+                    ViewBag.Message = String.Format("Usuario {0} registrado con exito!.\\n Numero de cuenta: {1} \\nRecuerde apuntar el numero.\\n Fecha y hora: {2}", model.User, cuenta, DateTime.Now.ToString());
+                    return View("IndexUser");
                 }
                 AddErrors(result);
             }
 
             // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario
             return View(model);
+        }
+
+        private static Random random = new Random();
+        public static string RandomString()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, 5)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         //

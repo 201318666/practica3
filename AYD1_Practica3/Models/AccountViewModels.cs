@@ -49,9 +49,14 @@ namespace AYD1_Practica3.Models
     public class LoginViewModel
     {
         [Required]
-        [Display(Name = "Correo electrónico")]
-        [EmailAddress]
-        public string Email { get; set; }
+        [Display(Name = "Número de cuenta")]
+        [DataType(DataType.Text)]
+        public string AccountNumber { get; set; }
+
+        [Required]
+        [Display(Name = "Usuario")]
+        [DataType(DataType.Text)]
+        public string User { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
@@ -64,6 +69,16 @@ namespace AYD1_Practica3.Models
 
     public class RegisterViewModel
     {
+        [Required]
+        [Display(Name = "Nombre completo")]
+        [DataType(DataType.Text)]
+        public string Username { get; set; }
+
+        [Required]
+        [Display(Name = "Usuario")]
+        [DataType(DataType.Text)]
+        public string User { get; set; }
+
         [Required]
         [EmailAddress]
         [Display(Name = "Correo electrónico")]
