@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Globalization;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Owin.Security;
-using AYD1_Practica3.Models;
-using System.Data.SqlClient;
+﻿using AYD1_Practica3.Models;
+using System;
 using System.Data;
+using System.Data.SqlClient;
+using System.Web.Mvc;
 
 namespace AYD1_Practica3.Controllers
 {
@@ -28,14 +19,16 @@ namespace AYD1_Practica3.Controllers
         // POST: /Transferencia/CrearTransferencia
         [HttpPost]
         [AllowAnonymous]
-        public async Task<ActionResult> Index(TransferenciaModel model, string returnUrl)
+        public ActionResult Index(TransferenciaModel model, string returnUrl)
         {
             if (!ModelState.IsValid)
             {
                 Console.WriteLine(model.AccountNumber);
                 return View(model);
             }
-            if (ExisteDestino(model) && HayFondos(model, Convert.ToDouble(model.Balance)))
+            string cuenta_pm = model.AccountNumber;
+            string usuario = User.Identity.Name;
+            if (ExisteDestino(cuenta_pm) && HayFondos(usuario, Convert.ToDouble(model.Balance)))
             {
                 SqlConnection sqlCon = new SqlConnection("Data Source=(LocalDb)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\C45ASP4311F\\source\\repos\\AYD1_Practica3\\AYD1_Practica3\\App_Data\\aspnet-AYD1_Practica3-20180410094646.mdf;Initial Catalog=aspnet-AYD1_Practica3-20180410094646;Integrated Security=True");
 
@@ -73,11 +66,11 @@ namespace AYD1_Practica3.Controllers
                     consultaCuenta = sqlCmd2.ExecuteScalar().ToString();
                     consultaMonto = sqlCmd.ExecuteScalar().ToString();
                     consultadestino = sqlCmd3.ExecuteScalar().ToString();
-                    
+
                     double monto = Convert.ToDouble(model.Balance);
                     string monto_usuario_logueado = Convert.ToString(Convert.ToDouble(consultaMonto) - monto);
                     string monto_destino = Convert.ToString(Convert.ToDouble(consultadestino) + monto);
-                    
+
                     //Actualiza monto actual de usuario logueado
                     SqlCommand usuario_origen = new SqlCommand
                     {
@@ -118,13 +111,13 @@ namespace AYD1_Practica3.Controllers
         }
 
 
-        private bool ExisteDestino(TransferenciaModel model)
+        public bool ExisteDestino(string cuenta)
         {
             SqlConnection sqlCon = new SqlConnection("Data Source=(LocalDb)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\C45ASP4311F\\source\\repos\\AYD1_Practica3\\AYD1_Practica3\\App_Data\\aspnet-AYD1_Practica3-20180410094646.mdf;Initial Catalog=aspnet-AYD1_Practica3-20180410094646;Integrated Security=True");
             //Cuenta destino
             SqlCommand sqlCmd = new SqlCommand
             {
-                CommandText = "select count(AccountNumber) from AspNetUsers where AccountNumber='" + model.AccountNumber + "';",
+                CommandText = "select count(AccountNumber) from AspNetUsers where AccountNumber='" + cuenta + "';",
                 Connection = sqlCon
             };
             string consulta = "0";
@@ -148,13 +141,13 @@ namespace AYD1_Practica3.Controllers
             return false;
         }
 
-        private bool HayFondos(TransferenciaModel model, double monto)
+        public bool HayFondos(string usuario, double monto)
         {
             SqlConnection sqlCon = new SqlConnection("Data Source=(LocalDb)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\C45ASP4311F\\source\\repos\\AYD1_Practica3\\AYD1_Practica3\\App_Data\\aspnet-AYD1_Practica3-20180410094646.mdf;Initial Catalog=aspnet-AYD1_Practica3-20180410094646;Integrated Security=True");
             //Monto de usuario logueado
             SqlCommand sqlCmd = new SqlCommand
             {
-                CommandText = "select Balance from AspNetUsers where UserName='" + User.Identity.Name + "';",
+                CommandText = "select Balance from AspNetUsers where UserName='" + usuario + "';",
                 Connection = sqlCon
             };
             string consultaMonto = "0";
@@ -177,14 +170,6 @@ namespace AYD1_Practica3.Controllers
             if (lo_que_hay >= monto)
                 return true;
             return false;
-        }
-
-        private void AddErrors(IdentityResult result)
-        {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError("", error);
-            }
         }
 
     }
