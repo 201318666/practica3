@@ -1,22 +1,36 @@
-﻿@{
+﻿@using AYD1_Practica3.Models
+@model TransferenciaModel
+@{
     ViewBag.Title = "Transferencia";
 }
 <h2>TRANSFERENCIAS ELECTRONICAS</h2>
-<h3>@ViewBag.Message</h3>
 
-<div>
-    <div class="container">
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <h4>Numero de cuenta destino</h4>
-                <input type="text" name="entrante" />
-                <br />
-                <h4>Monto a transferir</h4>
-                <input type="text" name="saliente" />
-                <br />
-                <br />
-                <button type="button"> Realizar Transferencia </button>
-            </ul>
-        </div>
+<div class="row">
+    <div class="col-md-8">
+        <section id="transferenciaForm">
+            @using (Html.BeginForm("Index", "Transferencia", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.LabelFor(m => m.AccountNumber, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        @Html.TextBoxFor(m => m.AccountNumber, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.AccountNumber, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Balance, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        @Html.TextBoxFor(m => m.Balance, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.Balance, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Realizar Transferencia" class="btn btn-default" />
+                    </div>
+                </div>
+            }
+        </section>
     </div>
 </div>

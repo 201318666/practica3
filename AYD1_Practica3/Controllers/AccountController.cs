@@ -74,7 +74,7 @@ namespace AYD1_Practica3.Controllers
             {
                 return View(model);
             }
-            SqlConnection sqlCon = new SqlConnection("Data Source=(LocalDb)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\Javier\\source\\repos\\AYD1_Practica3\\AYD1_Practica3\\App_Data\\aspnet-AYD1_Practica3-20180410094646.mdf;Initial Catalog=aspnet-AYD1_Practica3-20180410094646;Integrated Security=True");
+            SqlConnection sqlCon = new SqlConnection("Data Source=(LocalDb)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\C45ASP4311F\\source\\repos\\AYD1_Practica3\\AYD1_Practica3\\App_Data\\aspnet-AYD1_Practica3-20180410094646.mdf;Initial Catalog=aspnet-AYD1_Practica3-20180410094646;Integrated Security=True");
             SqlCommand sqlCmd = new SqlCommand
             {
                 CommandText = "select count(AccountNumber) from AspNetUsers where AccountNumber='" + model.AccountNumber + "';",
